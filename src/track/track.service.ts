@@ -1,15 +1,29 @@
-import { Injectable } from '@nestjs/common';
-import { CreateTrackDto } from './dto/create-track.dto';
-import { UpdateTrackDto } from './dto/update-track.dto';
+import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { CreateTrackDto } from "./dto/create-track.dto";
+import { UpdateTrackDto } from "./dto/update-track.dto";
+import { Comment, CommentDocument } from "./schemas/comment.schema";
+import { Track, TrackDocument } from "./schemas/track.schema";
 
 @Injectable()
 export class TrackService {
-  create(createTrackDto: CreateTrackDto) {
-    return 'This action adds a new track';
+  constructor(
+    @InjectModel(Track.name) private trackModel: Model<TrackDocument>,
+    @InjectModel(Comment.name) private commentModel: Model<CommentDocument>
+  ) {}
+
+  async create(createTrackDto: CreateTrackDto): Promise<Track> {
+    const track = await this.trackModel.create({
+      ...createTrackDto,
+      listens: 0,
+    });
+    return track;
   }
 
-  findAll() {
-    return `This action returns all track`;
+  async findAll() {
+    const tracks = await this.trackModel.find();
+    return tracks;
   }
 
   findOne(id: number) {
