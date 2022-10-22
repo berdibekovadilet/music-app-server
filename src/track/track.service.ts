@@ -5,6 +5,8 @@ import { CreateTrackDto } from "./dto/create-track.dto";
 import { UpdateTrackDto } from "./dto/update-track.dto";
 import { Comment, CommentDocument } from "./schemas/comment.schema";
 import { Track, TrackDocument } from "./schemas/track.schema";
+import { ObjectId } from "mongoose";
+import { CreateCommentDto } from "./dto/create-comment.dto";
 
 @Injectable()
 export class TrackService {
@@ -21,20 +23,32 @@ export class TrackService {
     return track;
   }
 
-  async findAll() {
+  async findAll(): Promise<Track[]> {
     const tracks = await this.trackModel.find();
     return tracks;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} track`;
+  async findOne(id: ObjectId): Promise<Track> {
+    const track = await (
+      await this.trackModel.findById(id)
+    ).populate("comments");
+    return track;
   }
 
   update(id: number, updateTrackDto: UpdateTrackDto) {
     return `This action updates a #${id} track`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} track`;
+  async remove(id: ObjectId): Promise<Track> {
+    const track = await this.trackModel.findByIdAndDelete(id);
+    return track._id;
+  }
+
+  async addComment(createCommentDto: CreateCommentDto): Promise<Comment> {
+    const track = await this.trackModel.findById(createCommentDto.trackId);
+    const comment = await this.commentModel.create({ ...createCommentDto });
+    track.comments.push(comment._id);
+    await track.save();
+    return comment;
   }
 }
