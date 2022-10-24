@@ -45,6 +45,11 @@ export class TrackController {
     return this.trackService.findAll(count, offset);
   }
 
+  @Get("/search")
+  search(@Query("query") query: string) {
+    return this.trackService.search(query);
+  }
+
   @Get(":id")
   findOne(@Param("id") id: ObjectId) {
     return this.trackService.findOne(id);
